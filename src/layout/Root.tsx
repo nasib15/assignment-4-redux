@@ -1,12 +1,22 @@
-import { ToggleTheme } from "@/components/theme/ToggleTheme";
+import Footer from "@/components/shared/Footer";
+import Navbar from "@/components/shared/Navbar";
 import { Outlet } from "react-router";
 
 const Root = () => {
   return (
-    <>
-      <ToggleTheme />
-      <Outlet />
-    </>
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <Navbar />
+
+      {/* Main Content */}
+      <main className="flex-1">
+        <Outlet />
+      </main>
+
+      {/* Footer */}
+      <Footer />
+    </div>
   );
 };
+
 export default Root;
