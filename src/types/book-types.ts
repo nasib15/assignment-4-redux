@@ -35,15 +35,17 @@ export interface BorrowForm {
   notes?: string;
 }
 
-export interface BookForm {
+export interface IBookForm {
   title: string;
   author: string;
+  genre:
+    | "FICTION"
+    | "NON_FICTION"
+    | "SCIENCE"
+    | "HISTORY"
+    | "BIOGRAPHY"
+    | "FANTASY";
   isbn: string;
-  publishedYear: number;
-  genre: string;
   description: string;
-  totalCopies: number;
-  publisher: string;
-  language: string;
-  pages: number;
+  copies: number;
 }

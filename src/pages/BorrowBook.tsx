@@ -11,10 +11,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { mockBooks } from "@/data/mock-data";
+// import { mockBooks } from "@/data/data";
 import type { Book, BorrowForm } from "@/types/book-types";
 import { ArrowLeft, BookOpen, Calendar, Mail, Phone, User } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 
 const BorrowBook = () => {
@@ -40,28 +40,28 @@ const BorrowBook = () => {
 
   const [errors, setErrors] = useState<Partial<BorrowForm>>({});
 
-  useEffect(() => {
-    const fetchBook = async () => {
-      setIsLoading(true);
-      try {
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 300));
+  // useEffect(() => {
+  //   const fetchBook = async () => {
+  //     setIsLoading(true);
+  //     try {
+  //       // Simulate API delay
+  //       await new Promise((resolve) => setTimeout(resolve, 300));
 
-        const foundBook = mockBooks.find((b) => b.id === bookId);
-        setBook(foundBook || null);
-      } catch (error) {
-        console.error("Error fetching book:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  //       const foundBook = mockBooks.find((b) => b.id === bookId);
+  //       setBook(foundBook || null);
+  //     } catch (error) {
+  //       console.error("Error fetching book:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
 
-    if (bookId) {
-      fetchBook();
-    } else {
-      setIsLoading(false);
-    }
-  }, [bookId]);
+  //   if (bookId) {
+  //     fetchBook();
+  //   } else {
+  //     setIsLoading(false);
+  //   }
+  // }, [bookId]);
 
   const handleInputChange = (field: keyof BorrowForm, value: string) => {
     setFormData((prev) => ({

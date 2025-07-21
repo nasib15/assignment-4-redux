@@ -6,8 +6,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -16,113 +23,49 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { genres, languages } from "@/data/mock-data";
-import type { BookForm } from "@/types/book-types";
+import { genres } from "@/data/data";
+import { useCreateBookMutation } from "@/redux/api/book";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, BookOpen, Save } from "lucide-react";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router";
+import { z } from "zod";
 
 const CreateBook = () => {
-  const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<BookForm>({
-    title: "",
-    author: "",
-    isbn: "",
-    publishedYear: new Date().getFullYear(),
-    genre: "",
-    description: "",
-    totalCopies: 1,
-    publisher: "",
-    language: "English",
-    pages: 0,
+  const [createBook, { isLoading }] = useCreateBookMutation();
+
+  const formSchema = z.object({
+    title: z.string().min(1, { message: "Title is required" }),
+    author: z.string().min(1, { message: "Author is required" }),
+    isbn: z.string().min(1, { message: "ISBN is required" }),
+    description: z
+      .string()
+      .min(10, { message: "Description must be at least 10 characters" }),
+    genre: z.enum(
+      genres.map((genre) => genre.value),
+      {
+        message: "Genre is required",
+      }
+    ),
+    copies: z
+      .number()
+      .min(1, { message: "Total copies should be greater than 0" }),
   });
 
-  const [errors, setErrors] = useState<Partial<BookForm>>({});
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      author: "",
+      isbn: "",
+      description: "",
+      genre: "FICTION",
+      copies: 1,
+    },
+  });
 
-  const handleInputChange = (field: keyof BookForm, value: string | number) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({
-        ...prev,
-        [field]: undefined,
-      }));
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: Partial<BookForm> = {};
-
-    if (!formData.title.trim()) {
-      newErrors.title = "Title is required";
-    }
-
-    if (!formData.author.trim()) {
-      newErrors.author = "Author is required";
-    }
-
-    if (!formData.isbn.trim()) {
-      newErrors.isbn = "ISBN is required";
-    } else if (!/^[\d-]+$/.test(formData.isbn)) {
-      newErrors.isbn = "ISBN should contain only numbers and hyphens";
-    }
-
-    if (!formData.genre) {
-      newErrors.genre = "Genre is required";
-    }
-
-    if (!formData.publisher.trim()) {
-      newErrors.publisher = "Publisher is required";
-    }
-
-    if (
-      formData.publishedYear < 1000 ||
-      formData.publishedYear > new Date().getFullYear()
-    ) {
-      newErrors.publishedYear = "Please enter a valid year";
-    }
-
-    if (formData.totalCopies < 1) {
-      newErrors.totalCopies = "Total copies must be at least 1";
-    }
-
-    if (formData.pages < 1) {
-      newErrors.pages = "Pages must be at least 1";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      console.log("Creating book:", formData);
-      alert("Book created successfully!");
-
-      // Navigate back to books list
-      navigate("/books");
-    } catch (error) {
-      console.error("Error creating book:", error);
-      alert("Error creating book. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    createBook(values);
   };
 
   return (
@@ -143,305 +86,208 @@ const CreateBook = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Information */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <BookOpen className="h-5 w-5" />
-                  Basic Information
-                </CardTitle>
-                <CardDescription>
-                  Enter the basic details about the book
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Title *</Label>
-                    <Input
-                      id="title"
-                      placeholder="Enter book title"
-                      value={formData.title}
-                      onChange={(e) =>
-                        handleInputChange("title", e.target.value)
-                      }
-                      className={errors.title ? "border-red-500" : ""}
-                    />
-                    {errors.title && (
-                      <p className="text-sm text-red-500">{errors.title}</p>
-                    )}
-                  </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <div className="grid gap-8">
+            {/* Main Information */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BookOpen className="h-5 w-5" />
+                    Basic Information
+                  </CardTitle>
+                  <CardDescription>
+                    Enter the basic details about the book
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Title *</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter title name"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="author">Author *</Label>
-                    <Input
-                      id="author"
-                      placeholder="Enter author name"
-                      value={formData.author}
-                      onChange={(e) =>
-                        handleInputChange("author", e.target.value)
-                      }
-                      className={errors.author ? "border-red-500" : ""}
-                    />
-                    {errors.author && (
-                      <p className="text-sm text-red-500">{errors.author}</p>
-                    )}
-                  </div>
-                </div>
+                    <div className="space-y-2">
+                      <FormField
+                        control={form.control}
+                        name="author"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Author *</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter author name"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="isbn">ISBN *</Label>
-                    <Input
-                      id="isbn"
-                      placeholder="978-0-123456-78-9"
-                      value={formData.isbn}
-                      onChange={(e) =>
-                        handleInputChange("isbn", e.target.value)
-                      }
-                      className={errors.isbn ? "border-red-500" : ""}
-                    />
-                    {errors.isbn && (
-                      <p className="text-sm text-red-500">{errors.isbn}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="publisher">Publisher *</Label>
-                    <Input
-                      id="publisher"
-                      placeholder="Enter publisher name"
-                      value={formData.publisher}
-                      onChange={(e) =>
-                        handleInputChange("publisher", e.target.value)
-                      }
-                      className={errors.publisher ? "border-red-500" : ""}
-                    />
-                    {errors.publisher && (
-                      <p className="text-sm text-red-500">{errors.publisher}</p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    placeholder="Enter book description..."
-                    value={formData.description}
-                    onChange={(e) =>
-                      handleInputChange("description", e.target.value)
-                    }
-                    rows={4}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Additional Details</CardTitle>
-                <CardDescription>
-                  Categorization and physical properties
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="genre">Genre *</Label>
-                    <Select
-                      value={formData.genre}
-                      onValueChange={(value) =>
-                        handleInputChange("genre", value)
-                      }
-                    >
-                      <SelectTrigger
-                        className={errors.genre ? "border-red-500" : ""}
-                      >
-                        <SelectValue placeholder="Select a genre" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {genres.map((genre) => (
-                          <SelectItem key={genre} value={genre}>
-                            {genre}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.genre && (
-                      <p className="text-sm text-red-500">{errors.genre}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="language">Language</Label>
-                    <Select
-                      value={formData.language}
-                      onValueChange={(value) =>
-                        handleInputChange("language", value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {languages.map((language) => (
-                          <SelectItem key={language} value={language}>
-                            {language}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="publishedYear">Published Year *</Label>
-                    <Input
-                      id="publishedYear"
-                      type="number"
-                      min="1000"
-                      max={new Date().getFullYear()}
-                      value={formData.publishedYear}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "publishedYear",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                      className={errors.publishedYear ? "border-red-500" : ""}
-                    />
-                    {errors.publishedYear && (
-                      <p className="text-sm text-red-500">
-                        {errors.publishedYear}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="pages">Pages *</Label>
-                    <Input
-                      id="pages"
-                      type="number"
-                      min="1"
-                      value={formData.pages || ""}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "pages",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                      className={errors.pages ? "border-red-500" : ""}
-                    />
-                    {errors.pages && (
-                      <p className="text-sm text-red-500">{errors.pages}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="totalCopies">Total Copies *</Label>
-                    <Input
-                      id="totalCopies"
-                      type="number"
-                      min="1"
-                      value={formData.totalCopies}
-                      onChange={(e) =>
-                        handleInputChange(
-                          "totalCopies",
-                          parseInt(e.target.value) || 0
-                        )
-                      }
-                      className={errors.totalCopies ? "border-red-500" : ""}
-                    />
-                    {errors.totalCopies && (
-                      <p className="text-sm text-red-500">
-                        {errors.totalCopies}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Preview Card */}
-          <div className="lg:col-span-1">
-            <Card className="sticky top-4">
-              <CardHeader>
-                <CardTitle>Preview</CardTitle>
-                <CardDescription>
-                  How the book will appear in the library
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="aspect-[3/4] bg-muted rounded-md flex items-center justify-center">
-                    <BookOpen className="h-16 w-16 text-muted-foreground" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <h3 className="font-semibold text-lg leading-tight">
-                      {formData.title || "Book Title"}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                      by {formData.author || "Author Name"}
-                    </p>
-
-                    <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Genre:</span>
-                        <span>{formData.genre || "N/A"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Year:</span>
-                        <span>{formData.publishedYear || "N/A"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Pages:</span>
-                        <span>{formData.pages || "N/A"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Copies:</span>
-                        <span>{formData.totalCopies}</span>
-                      </div>
+                    <div className="space-y-2">
+                      <FormField
+                        control={form.control}
+                        name="isbn"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>ISBN *</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                placeholder="Enter isbn number"
+                                {...field}
+                                className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-end">
-          <Link to="/books">
-            <Button variant="outline" className="w-full sm:w-auto">
-              Cancel
+                  <div className="grid grid-cols-1 gap-4"></div>
+
+                  <div className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description *</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              id="description"
+                              placeholder="Enter book description..."
+                              rows={4}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Additional Details</CardTitle>
+                  <CardDescription>
+                    Categorization and physical properties
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <FormField
+                        control={form.control}
+                        name="genre"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Genre</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a genre" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {genres.map((genre) => (
+                                  <SelectItem
+                                    key={genre.id}
+                                    value={genre.value}
+                                    defaultValue={"FICTION"}
+                                  >
+                                    {genre.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <FormField
+                        control={form.control}
+                        name="copies"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Total Copies *</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="number"
+                                min="1"
+                                placeholder="Enter total copies"
+                                {...field}
+                                onChange={(e) =>
+                                  field.onChange(Number(e.target.value))
+                                }
+                                className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-end">
+            <Link to="/books">
+              <Button variant="outline" className="w-full sm:w-auto">
+                Cancel
+              </Button>
+            </Link>
+            <Button
+              type="submit"
+              className="w-full sm:w-auto"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Create Book
+                </>
+              )}
             </Button>
-          </Link>
-          <Button
-            type="submit"
-            className="w-full sm:w-auto"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Creating...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 mr-2" />
-                Create Book
-              </>
-            )}
-          </Button>
-        </div>
-      </form>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 };

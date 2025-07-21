@@ -5,14 +5,29 @@ export const bookApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: "https://mongoose-assignment-3-beta.vercel.app/api",
   }),
+  tagTypes: ["books"],
   endpoints: (builder) => ({
     getAllBooks: builder.query({
       query: () => "/books",
+      providesTags: ["books"],
     }),
     getSingleBookDeatils: builder.query({
       query: (id) => `/books/${id}`,
+      providesTags: ["books"],
+    }),
+    createBook: builder.mutation({
+      query: (book) => ({
+        url: "/books",
+        method: "POST",
+        body: book,
+      }),
+      invalidatesTags: ["books"],
     }),
   }),
 });
 
-export const { useGetAllBooksQuery, useGetSingleBookDeatilsQuery } = bookApi;
+export const {
+  useGetAllBooksQuery,
+  useGetSingleBookDeatilsQuery,
+  useCreateBookMutation,
+} = bookApi;

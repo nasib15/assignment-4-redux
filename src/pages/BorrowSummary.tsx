@@ -31,7 +31,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { mockBorrowRecords } from "@/data/mock-data";
+import { mockBorrowRecords } from "@/data/data";
 import {
   AlertCircle,
   ArrowLeft,
