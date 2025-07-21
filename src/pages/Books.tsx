@@ -11,6 +11,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -41,9 +49,12 @@ import { useState } from "react";
 import { Link } from "react-router";
 
 const Books = () => {
-  const { data: books, isError, isLoading } = useGetAllBooksQuery(undefined);
+  const [page, setPage] = useState(1);
+  const { data: books, isError, isLoading } = useGetAllBooksQuery({ page });
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("all");
+
+  console.log(books, "books");
 
   // Get unique genres for filter
   // const genres = Array.from(new Set(books.map((book) => book.genre)));
@@ -60,7 +71,6 @@ const Books = () => {
   // });
 
   const handleDelete = (bookId: string) => {
-    // Mock delete action
     console.log("Delete book:", bookId);
     alert("Delete functionality would be implemented here");
   };
@@ -149,91 +159,156 @@ const Books = () => {
       {isLoading ? (
         <TableLoader />
       ) : (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Author</TableHead>
-                <TableHead>Genre</TableHead>
-                <TableHead>ISBN</TableHead>
-                <TableHead>Copies</TableHead>
-                <TableHead>Availability</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {books?.data?.map((book: IBook) => (
-                <TableRow key={book._id}>
-                  <TableCell className="font-medium">{book.title}</TableCell>
-                  <TableCell>{book.author}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{book.genre}</Badge>
-                  </TableCell>
-
-                  <TableCell>{book.isbn}</TableCell>
-
-                  <TableCell>
-                    <span
-                      className={
-                        book.copies > 0 ? "text-green-600" : "text-red-600"
-                      }
-                    >
-                      {book.copies}
-                    </span>
-                  </TableCell>
-
-                  <TableCell>
-                    <Badge variant={book.available ? "default" : "destructive"}>
-                      {book.available ? "Available" : "Not Available"}
-                    </Badge>
-                  </TableCell>
-
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <div className="h-4 w-4">⋮</div>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem asChild>
-                          <Link to={`/books/${book._id}`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link to={`/edit-book/${book._id}`}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem asChild disabled={book.copies === 0}>
-                          <Link to={`/borrow/${book._id}`}>
-                            <BookOpen className="mr-2 h-4 w-4" />
-                            Borrow
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => handleDelete(book._id)}
-                          className="text-red-600"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
+        <>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Author</TableHead>
+                  <TableHead>Genre</TableHead>
+                  <TableHead>ISBN</TableHead>
+                  <TableHead>Copies</TableHead>
+                  <TableHead>Availability</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+              </TableHeader>
+              <TableBody>
+                {books?.data?.map((book: IBook) => (
+                  <TableRow key={book._id}>
+                    <TableCell className="font-medium">{book.title}</TableCell>
+                    <TableCell>{book.author}</TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{book.genre}</Badge>
+                    </TableCell>
+
+                    <TableCell>{book.isbn}</TableCell>
+
+                    <TableCell>
+                      <span
+                        className={
+                          book.copies > 0 ? "text-green-600" : "text-red-600"
+                        }
+                      >
+                        {book.copies}
+                      </span>
+                    </TableCell>
+
+                    <TableCell>
+                      <Badge
+                        variant={book.available ? "default" : "destructive"}
+                      >
+                        {book.available ? "Available" : "Not Available"}
+                      </Badge>
+                    </TableCell>
+
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <div className="h-4 w-4">⋮</div>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuItem asChild>
+                            <Link to={`/books/${book._id}`}>
+                              <Eye className="mr-2 h-4 w-4" />
+                              View Details
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link to={`/edit-book/${book._id}`}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            asChild
+                            disabled={book.copies === 0}
+                          >
+                            <Link to={`/borrow/${book._id}`}>
+                              <BookOpen className="mr-2 h-4 w-4" />
+                              Borrow
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDelete(book._id)}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+          <div className="flex justify-center mt-8">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    className={page === 1 ? "opacity-50" : "cursor-pointer"}
+                    disabled={page === 1}
+                  />
+                </PaginationItem>
+
+                {/* Show previous page if not on first page */}
+                {page > 1 && (
+                  <PaginationItem>
+                    <PaginationLink
+                      onClick={() => setPage(page - 1)}
+                      className="cursor-pointer"
+                    >
+                      {page - 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+
+                {/* Current page */}
+                <PaginationItem>
+                  <PaginationLink isActive className="cursor-default">
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+
+                {/* Show next page if there are more books */}
+                {books?.meta?.totalPages && page < books.meta.totalPages && (
+                  <PaginationItem>
+                    <PaginationLink
+                      onClick={() => setPage(page + 1)}
+                      className="cursor-pointer"
+                    >
+                      {page + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => setPage(page + 1)}
+                    className={
+                      books?.meta?.totalPages && page >= books.meta.totalPages
+                        ? "opacity-50"
+                        : "cursor-pointer"
+                    }
+                    disabled={
+                      books?.meta?.totalPages && page >= books.meta.totalPages
+                    }
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        </>
       )}
 
       {/* Empty State */}
