@@ -28,12 +28,13 @@ import { useCreateBookMutation } from "@/redux/api/book";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, BookOpen, Save } from "lucide-react";
 import { useForm } from "react-hook-form";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { toast } from "sonner";
 import { z } from "zod";
 
 const CreateBook = () => {
   const [createBook, { isLoading }] = useCreateBookMutation();
-
+  const navigate = useNavigate();
   const formSchema = z.object({
     title: z.string().min(1, { message: "Title is required" }),
     author: z.string().min(1, { message: "Author is required" }),
@@ -65,7 +66,24 @@ const CreateBook = () => {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    createBook(values);
+    createBook(values)
+      .unwrap()
+      .then((response) => {
+        if (response.success) {
+          toast.success("Book created successfully", {
+            action: {
+              label: "Go to books",
+              onClick: () => navigate("/books"),
+            },
+            position: "top-right",
+          });
+        } else {
+          toast.error("Failed to create book");
+        }
+      })
+      .catch(() => {
+        toast.error("Failed to create book");
+      });
   };
 
   return (
