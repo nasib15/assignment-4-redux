@@ -34,7 +34,7 @@ export const router = createBrowserRouter([
         element: <EditBook />,
       },
       {
-        path: "/borrow/:bookId",
+        path: "/borrow/:id",
         element: <BorrowBook />,
       },
       {

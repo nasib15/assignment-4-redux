@@ -1,3 +1,14 @@
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,7 +19,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useGetSingleBookDeatilsQuery } from "@/redux/api/book";
+import {
+  useDeleteBookMutation,
+  useGetSingleBookDeatilsQuery,
+} from "@/redux/api/book";
 import type { IBook } from "@/types/book-types";
 import {
   ArrowLeft,
@@ -22,12 +36,13 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
 
 const BookDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [copiedField, setCopiedField] = useState<string | null>(null);
-
+  const [deleteBook, { isLoading: isDeleting }] = useDeleteBookMutation();
   const { data, isLoading } = useGetSingleBookDeatilsQuery(id);
   const bookDetails: IBook = data?.data;
 
@@ -41,15 +56,22 @@ const BookDetails = () => {
     }
   };
 
-  const handleDelete = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to delete this book? This action cannot be undone."
-      )
-    ) {
-      alert("Book deleted successfully!");
-      navigate("/books");
-    }
+  const handleDelete = (id: string) => {
+    deleteBook(id)
+      .unwrap()
+      .then((response) => {
+        if (response.success) {
+          toast.success("Book deleted successfully", {
+            position: "top-right",
+          });
+          navigate("/books");
+        } else {
+          toast.error("Failed to delete book");
+        }
+      })
+      .catch(() => {
+        toast.error("Failed to delete book");
+      });
   };
 
   if (isLoading) {
@@ -111,20 +133,54 @@ const BookDetails = () => {
         <div className="flex flex-wrap gap-2">
           <Link to={`/edit-book/${bookDetails._id}`}>
             <Button variant="outline">
-              <Edit className="h-4 w-4 mr-2" />
+              <Edit className="h-4 w-4" />
               Edit
             </Button>
           </Link>
-          <Link to={`/borrow/${bookDetails._id}`}>
-            <Button variant="default" disabled={bookDetails.copies === 0}>
-              <BookOpen className="h-4 w-4 mr-2" />
-              {bookDetails.copies > 0 ? "Borrow" : "Unavailable"}
-            </Button>
-          </Link>
-          <Button variant="destructive" onClick={handleDelete}>
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete
+          <Button
+            variant="default"
+            disabled={bookDetails.copies === 0}
+            onClick={() => navigate(`/borrow/${bookDetails._id}`)}
+          >
+            <BookOpen className="h-4 w-4" />
+            {bookDetails.copies > 0 ? "Borrow" : "Unavailable"}
           </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive">
+                <Trash2 className="h-4 w-4" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  this book and remove it from the library system.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => handleDelete(bookDetails._id)}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </>
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
