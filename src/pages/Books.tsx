@@ -1,4 +1,15 @@
 import TableLoader from "@/components/loaders/TableLoader";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +44,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useGetAllBooksQuery } from "@/redux/api/book";
+import { useDeleteBookMutation, useGetAllBooksQuery } from "@/redux/api/book";
 import type { IBook } from "@/types/book-types";
 import {
   Book,
@@ -47,10 +58,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
+import { toast } from "sonner";
 
 const Books = () => {
   const [page, setPage] = useState(1);
   const { data: books, isError, isLoading } = useGetAllBooksQuery({ page });
+  const [deleteBook, { isLoading: isDeleting }] = useDeleteBookMutation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("all");
 
@@ -71,8 +84,20 @@ const Books = () => {
   // });
 
   const handleDelete = (bookId: string) => {
-    console.log("Delete book:", bookId);
-    alert("Delete functionality would be implemented here");
+    deleteBook(bookId)
+      .unwrap()
+      .then((response) => {
+        if (response.success) {
+          toast.success("Book deleted successfully", {
+            position: "top-right",
+          });
+        } else {
+          toast.error("Failed to delete book");
+        }
+      })
+      .catch(() => {
+        toast.error("Failed to delete book");
+      });
   };
 
   if (isError) {
@@ -212,13 +237,13 @@ const Books = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuItem asChild>
+                          <DropdownMenuItem asChild disabled={isDeleting}>
                             <Link to={`/books/${book._id}`}>
                               <Eye className="mr-2 h-4 w-4" />
                               View Details
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
+                          <DropdownMenuItem asChild disabled={isDeleting}>
                             <Link to={`/edit-book/${book._id}`}>
                               <Edit className="mr-2 h-4 w-4" />
                               Edit
@@ -227,7 +252,7 @@ const Books = () => {
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             asChild
-                            disabled={book.copies === 0}
+                            disabled={book.copies === 0 || isDeleting}
                           >
                             <Link to={`/borrow/${book._id}`}>
                               <BookOpen className="mr-2 h-4 w-4" />
@@ -235,13 +260,48 @@ const Books = () => {
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => handleDelete(book._id)}
-                            className="text-red-600"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem
+                                className="text-red-600"
+                                onSelect={(e) => e.preventDefault()}
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  Are you absolutely sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  This action cannot be undone. This will
+                                  permanently delete this book and remove it
+                                  from the library system.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDelete(book._id)}
+                                  disabled={isDeleting}
+                                >
+                                  {isDeleting ? (
+                                    <>
+                                      <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
+                                      Deleting...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Trash2 className="h-4 w-4" />
+                                      Delete
+                                    </>
+                                  )}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
