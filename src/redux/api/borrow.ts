@@ -20,7 +20,7 @@ export const borrowApi = createApi({
         body: data,
       }),
       invalidatesTags: ["borrows"],
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
         try {
           await queryFulfilled;
           dispatch(bookApi.util.invalidateTags(["books"]));
