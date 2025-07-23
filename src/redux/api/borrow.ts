@@ -11,6 +11,7 @@ export const borrowApi = createApi({
   endpoints: (builder) => ({
     getAllBorrows: builder.query({
       query: () => "/borrow",
+      providesTags: ["borrows"],
     }),
     createBorrow: builder.mutation({
       query: (data) => ({

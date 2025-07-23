@@ -20,7 +20,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -29,13 +28,6 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -46,16 +38,7 @@ import {
 } from "@/components/ui/table";
 import { useDeleteBookMutation, useGetAllBooksQuery } from "@/redux/api/book";
 import type { IBook } from "@/types/book-types";
-import {
-  Book,
-  BookOpen,
-  Edit,
-  Eye,
-  Filter,
-  Plus,
-  Search,
-  Trash2,
-} from "lucide-react";
+import { Book, BookOpen, Edit, Eye, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router";
 import { toast } from "sonner";
@@ -64,24 +47,6 @@ const Books = () => {
   const [page, setPage] = useState(1);
   const { data: books, isError, isLoading } = useGetAllBooksQuery({ page });
   const [deleteBook, { isLoading: isDeleting }] = useDeleteBookMutation();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedGenre, setSelectedGenre] = useState("all");
-
-  console.log(books, "books");
-
-  // Get unique genres for filter
-  // const genres = Array.from(new Set(books.map((book) => book.genre)));
-
-  // // Filter books based on search and genre
-  // const filteredBooks = books.filter((book) => {
-  //   const matchesSearch =
-  //     book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     book.isbn.includes(searchTerm);
-  //   const matchesGenre =
-  //     selectedGenre === "all" || book.genre === selectedGenre;
-  //   return matchesSearch && matchesGenre;
-  // });
 
   const handleDelete = (bookId: string) => {
     deleteBook(bookId)
@@ -129,7 +94,6 @@ const Books = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground">Library Books</h1>
@@ -145,41 +109,11 @@ const Books = () => {
         </Link>
       </div>
 
-      {/* Search and Filters */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search by title, author, or ISBN..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Select value={selectedGenre} onValueChange={setSelectedGenre}>
-          <SelectTrigger className="w-full sm:w-48">
-            <Filter className="h-4 w-4 mr-2" />
-            <SelectValue placeholder="Filter by genre" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Genres</SelectItem>
-            {/* {genres.map((genre) => (
-              <SelectItem key={genre} value={genre}>
-                {genre}
-              </SelectItem>
-            ))} */}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Results Count */}
       <div className="mb-4">
         <p className="text-sm text-muted-foreground">
-          {/* Showing {filteredBooks.length} of {books.length} books */}
+          Showing {books?.data?.length} of {books?.meta?.totalItems} books
         </p>
       </div>
-
-      {/* Table View */}
 
       {isLoading ? (
         <TableLoader />
@@ -321,7 +255,6 @@ const Books = () => {
                   />
                 </PaginationItem>
 
-                {/* Show previous page if not on first page */}
                 {page > 1 && (
                   <PaginationItem>
                     <PaginationLink
@@ -333,14 +266,12 @@ const Books = () => {
                   </PaginationItem>
                 )}
 
-                {/* Current page */}
                 <PaginationItem>
                   <PaginationLink isActive className="cursor-default">
                     {page}
                   </PaginationLink>
                 </PaginationItem>
 
-                {/* Show next page if there are more books */}
                 {books?.meta?.totalPages && page < books.meta.totalPages && (
                   <PaginationItem>
                     <PaginationLink
@@ -371,24 +302,19 @@ const Books = () => {
         </>
       )}
 
-      {/* Empty State */}
       {books?.data?.length === 0 && (
         <div className="text-center py-12">
           <Book className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-semibold mb-2">No books found</h3>
           <p className="text-muted-foreground mb-4">
-            {searchTerm || selectedGenre !== "all"
-              ? "Try adjusting your search or filters"
-              : "Get started by adding your first book"}
+            Get started by adding your first book
           </p>
-          {!searchTerm && selectedGenre === "all" && (
-            <Link to="/create-book">
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add First Book
-              </Button>
-            </Link>
-          )}
+          <Link to="/create-book">
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Add First Book
+            </Button>
+          </Link>
         </div>
       )}
     </div>
