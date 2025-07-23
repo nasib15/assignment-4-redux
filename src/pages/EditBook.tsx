@@ -31,6 +31,7 @@ import {
 import type { IBook } from "@/types/book-types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, BookOpen, Save } from "lucide-react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
@@ -44,8 +45,6 @@ const EditBook = () => {
   const { data, isLoading } = useGetSingleBookDeatilsQuery(id);
   const bookDetails: IBook = data?.data;
 
-  console.log(bookDetails);
-
   const formSchema = z.object({
     title: z.string().min(1, { message: "Title is required" }),
     author: z.string().min(1, { message: "Author is required" }),
@@ -58,14 +57,27 @@ const EditBook = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: bookDetails?.title,
-      author: bookDetails?.author,
-      isbn: bookDetails?.isbn,
-      description: bookDetails?.description,
-      genre: bookDetails?.genre,
-      copies: bookDetails?.copies,
+      title: "",
+      author: "",
+      isbn: "",
+      description: "",
+      genre: "",
+      copies: 0,
     },
   });
+
+  useEffect(() => {
+    if (bookDetails) {
+      form.reset({
+        title: bookDetails.title || "",
+        author: bookDetails.author || "",
+        isbn: bookDetails.isbn || "",
+        description: bookDetails.description || "",
+        genre: bookDetails?.genre || "",
+        copies: bookDetails?.copies || 0,
+      });
+    }
+  }, [bookDetails, form]);
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     updateBook({ id: id as string, ...values })
@@ -171,7 +183,6 @@ const EditBook = () => {
                               <Input
                                 placeholder="Enter title name"
                                 {...field}
-                                defaultValue={bookDetails?.title}
                               />
                             </FormControl>
                             <FormMessage />
@@ -191,7 +202,6 @@ const EditBook = () => {
                               <Input
                                 placeholder="Enter author name"
                                 {...field}
-                                defaultValue={bookDetails?.author}
                               />
                             </FormControl>
                             <FormMessage />
@@ -213,7 +223,6 @@ const EditBook = () => {
                                 placeholder="Enter isbn number"
                                 {...field}
                                 className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                                defaultValue={bookDetails?.isbn}
                               />
                             </FormControl>
                             <FormMessage />
@@ -238,7 +247,6 @@ const EditBook = () => {
                               placeholder="Enter book description..."
                               rows={4}
                               {...field}
-                              defaultValue={bookDetails?.description}
                             />
                           </FormControl>
                           <FormMessage />
@@ -267,7 +275,7 @@ const EditBook = () => {
                             <FormLabel>Genre</FormLabel>
                             <Select
                               onValueChange={field.onChange}
-                              defaultValue={bookDetails?.genre}
+                              value={bookDetails?.genre || ""}
                             >
                               <FormControl>
                                 <SelectTrigger>
@@ -278,8 +286,7 @@ const EditBook = () => {
                                 {genres.map((genre) => (
                                   <SelectItem
                                     key={genre.id}
-                                    value={genre.value}
-                                    defaultValue={bookDetails?.genre}
+                                    value={genre?.value || ""}
                                   >
                                     {genre.label}
                                   </SelectItem>
@@ -309,7 +316,6 @@ const EditBook = () => {
                                   field.onChange(Number(e.target.value))
                                 }
                                 className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                                defaultValue={bookDetails?.copies}
                               />
                             </FormControl>
                             <FormMessage />
