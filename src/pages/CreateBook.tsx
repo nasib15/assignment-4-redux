@@ -26,7 +26,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { genres } from "@/data/data";
 import { useCreateBookMutation } from "@/redux/api/book";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, BookOpen, Save } from "lucide-react";
+import {
+  ArrowLeft,
+  BookOpen,
+  FileText,
+  Hash,
+  Save,
+  Sparkles,
+} from "lucide-react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -87,76 +94,112 @@ const CreateBook = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-8">
-        <Link to="/books">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Books
-          </Button>
-        </Link>
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Add New Book</h1>
-          <p className="text-muted-foreground mt-2">
-            Enter the details for the new book
-          </p>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50/30 via-white to-purple-50/30 dark:from-slate-900/50 dark:via-slate-800/50 dark:to-purple-900/20">
+      <div className="container mx-auto px-4 py-8 max-w-4xl">
+        {/* Floating Background Elements */}
+        <div className="fixed top-20 left-10 w-20 h-20 bg-blue-400/10 rounded-full blur-xl animate-float"></div>
+        <div
+          className="fixed bottom-20 right-10 w-32 h-32 bg-purple-400/10 rounded-full blur-xl animate-float"
+          style={{ animationDelay: "2s" }}
+        ></div>
+        <div
+          className="fixed top-1/2 left-1/4 w-16 h-16 bg-pink-400/10 rounded-full blur-xl animate-float"
+          style={{ animationDelay: "4s" }}
+        ></div>
+
+        {/* Header */}
+        <div className="flex items-center gap-6 mb-12 animate-slide-up">
+          <Link to="/books">
+            <Button
+              variant="outline"
+              size="sm"
+              className="hover-lift bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-border/50 hover:border-primary/50 transition-all duration-300"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Books
+            </Button>
+          </Link>
+          <div className="flex-1">
+            <div className="flex items-center gap-4 mb-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-xl opacity-30 animate-glow-pulse"></div>
+                <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-4 rounded-2xl">
+                  <BookOpen className="h-8 w-8 text-white" />
+                </div>
+              </div>
+              <h1 className="text-4xl font-bold text-gradient">Add New Book</h1>
+            </div>
+            <p className="text-xl text-muted-foreground">
+              Create a new entry in your digital library collection
+            </p>
+          </div>
         </div>
-      </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <div className="grid gap-8">
-            {/* Main Information */}
-            <div className="lg:col-span-2 space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5" />
-                    Basic Information
-                  </CardTitle>
-                  <CardDescription>
-                    Enter the basic details about the book
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <FormField
-                        control={form.control}
-                        name="title"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Title *</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Enter title name"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <div className="grid gap-8">
+              {/* Main Information */}
+              <div className="lg:col-span-2 space-y-8">
+                <Card
+                  className="card-modern animate-scale-in hover-lift"
+                  style={{ animationDelay: "200ms" }}
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3 text-xl">
+                      <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-2 rounded-lg">
+                        <FileText className="h-5 w-5 text-white" />
+                      </div>
+                      Basic Information
+                    </CardTitle>
+                    <CardDescription className="text-base">
+                      Enter the essential details about the book
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <FormField
+                          control={form.control}
+                          name="title"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-semibold">
+                                Book Title *
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Enter the book title..."
+                                  className="input-modern h-12 text-base"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <FormField
-                        control={form.control}
-                        name="author"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Author *</FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Enter author name"
-                                {...field}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="space-y-2">
+                        <FormField
+                          control={form.control}
+                          name="author"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-semibold">
+                                Author Name *
+                              </FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="Enter author name..."
+                                  className="input-modern h-12 text-base"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -165,13 +208,16 @@ const CreateBook = () => {
                         name="isbn"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>ISBN *</FormLabel>
+                            <FormLabel className="text-sm font-semibold flex items-center gap-2">
+                              <Hash className="h-4 w-4" />
+                              ISBN Number *
+                            </FormLabel>
                             <FormControl>
                               <Input
                                 type="number"
-                                placeholder="Enter isbn number"
+                                placeholder="Enter ISBN number..."
+                                className="input-modern h-12 text-base [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                                 {...field}
-                                className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                               />
                             </FormControl>
                             <FormMessage />
@@ -179,133 +225,151 @@ const CreateBook = () => {
                         )}
                       />
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 gap-4"></div>
-
-                  <div className="space-y-2">
-                    <FormField
-                      control={form.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description *</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              id="description"
-                              placeholder="Enter book description..."
-                              rows={4}
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Additional Details</CardTitle>
-                  <CardDescription>
-                    Categorization and physical properties
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <FormField
                         control={form.control}
-                        name="genre"
+                        name="description"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Genre</FormLabel>
-                            <Select
-                              onValueChange={field.onChange}
-                              defaultValue={field.value}
-                            >
+                            <FormLabel className="text-sm font-semibold">
+                              Book Description *
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder="Enter a detailed description of the book..."
+                                rows={4}
+                                className="input-modern text-base resize-none"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card
+                  className="card-modern animate-scale-in hover-lift"
+                  style={{ animationDelay: "400ms" }}
+                >
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3 text-xl">
+                      <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-2 rounded-lg">
+                        <Sparkles className="h-5 w-5 text-white" />
+                      </div>
+                      Additional Details
+                    </CardTitle>
+                    <CardDescription className="text-base">
+                      Categorization and inventory information
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <FormField
+                          control={form.control}
+                          name="genre"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-semibold">
+                                Genre Category
+                              </FormLabel>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
+                                <FormControl>
+                                  <SelectTrigger className="input-modern h-12 text-base">
+                                    <SelectValue placeholder="Select a genre..." />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl border border-border/50">
+                                  {genres.map((genre) => (
+                                    <SelectItem
+                                      key={genre.id}
+                                      value={genre.value}
+                                      className="text-base"
+                                    >
+                                      {genre.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <FormField
+                          control={form.control}
+                          name="copies"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-sm font-semibold">
+                                Total Copies *
+                              </FormLabel>
                               <FormControl>
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Select a genre" />
-                                </SelectTrigger>
+                                <Input
+                                  type="number"
+                                  min="1"
+                                  placeholder="Enter number of copies..."
+                                  className="input-modern h-12 text-base [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
+                                  {...field}
+                                  onChange={(e) =>
+                                    field.onChange(Number(e.target.value))
+                                  }
+                                />
                               </FormControl>
-                              <SelectContent>
-                                {genres.map((genre) => (
-                                  <SelectItem
-                                    key={genre.id}
-                                    value={genre.value}
-                                    defaultValue={"FICTION"}
-                                  >
-                                    {genre.label}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
                     </div>
-
-                    <div className="space-y-2">
-                      <FormField
-                        control={form.control}
-                        name="copies"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Total Copies *</FormLabel>
-                            <FormControl>
-                              <Input
-                                type="number"
-                                min="1"
-                                placeholder="Enter total copies"
-                                {...field}
-                                onChange={(e) =>
-                                  field.onChange(Number(e.target.value))
-                                }
-                                className="[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-end">
-            <Link to="/books">
-              <Button variant="outline" className="w-full sm:w-auto">
-                Cancel
-              </Button>
-            </Link>
-            <Button
-              type="submit"
-              className="w-full sm:w-auto"
-              disabled={isLoading}
+            {/* Action Buttons */}
+            <div
+              className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-scale"
+              style={{ animationDelay: "600ms" }}
             >
-              {isLoading ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  Create Book
-                </>
-              )}
-            </Button>
-          </div>
-        </form>
-      </Form>
+              <Link to="/books" className="w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  className="w-full h-12 text-base bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border-border/50 hover:border-primary/50 hover-lift transition-all duration-300"
+                >
+                  Cancel
+                </Button>
+              </Link>
+              <Button
+                type="submit"
+                className="w-full sm:w-auto h-12 text-base button-primary hover-lift min-w-[160px]"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-b-transparent mr-2"></div>
+                    Creating Book...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-5 w-5 mr-2" />
+                    Create Book
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </div>
     </div>
   );
 };
