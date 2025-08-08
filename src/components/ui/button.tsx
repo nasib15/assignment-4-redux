@@ -42,28 +42,25 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
-function Button({
-  className,
-  variant,
-  size,
-  asChild = false,
-  children,
-  ...props
-}: ButtonProps) {
-  const Comp = asChild ? Slot : "button";
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, children, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
 
-  return (
-    <Comp
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    >
-      {children}
-      {/* Shimmer effect for default variant */}
-      {variant === "default" && (
-        <div className="absolute inset-0 -top-[2px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 skew-x-12 group-hover:animate-shimmer"></div>
-      )}
-    </Comp>
-  );
-}
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      >
+        {children}
+        {variant === "default" && (
+          <div className="absolute inset-0 -top-[2px] bg-gradient-to-r from-transparent via-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 skew-x-12 group-hover:animate-shimmer"></div>
+        )}
+      </Comp>
+    );
+  }
+);
+
+Button.displayName = "Button";
 
 export { Button, buttonVariants };
